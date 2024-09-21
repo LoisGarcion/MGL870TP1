@@ -4,11 +4,11 @@ const express = require('express');
 
 const pool = new Pool(
     {
-        user:'..',
-        host:'..',
-        password:'..',
-        database:'..',
-        port:5432,
+        user:'dbbanqueuser',
+        host:'dbbanque',
+        password:'dbbanquepassword',
+        database:'dbb',
+        port:5433,
     });
 
 const app = express();
@@ -24,7 +24,8 @@ app.listen(
 
 app.get("/banque/:id", (req, res) => {
     //recuperer les info banquaire du client
-res.status(200).json("banque:...");
-}
-)
+    pool.query("SELECT * FROM banque WHERE id = $1", [req.params.id], (error, results) => {
+        res.status(200).json(results);
+    });
+});
 

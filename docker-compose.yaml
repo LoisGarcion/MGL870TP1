@@ -1,23 +1,22 @@
-version: "3"
 services:
   dbclient:
     image: postgres
     environment:
-      POSTGRES_DB: dbclient
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: dbc
+      POSTGRES_USER: dbclientuser
+      POSTGRES_PASSWORD: dbclientpassword
     volumes:
       - ./serviceClient/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
-  dbBanque:
+  dbbanque:
     image: postgres
     environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: dbb
+      POSTGRES_USER: dbbanqueuser
+      POSTGRES_PASSWORD: dbbanquepassword
     volumes:
-      - ./serviceClient/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./serviceBanque/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5433:5432"
   serviceclient:
@@ -32,4 +31,4 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - dbBanque
+      - dbbanque
