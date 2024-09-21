@@ -25,7 +25,7 @@ app.listen(
 app.get("/client/:id", (req, res) => {
         //recuperer les info du client
     pool.query("SELECT * FROM client WHERE id = $1", [req.params.id], (error, results) => {
-        res.status(200).json(results);
+        res.status(200).json(results.rows);
     })
 });
 

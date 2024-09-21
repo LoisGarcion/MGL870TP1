@@ -1,5 +1,3 @@
-CREATE DATABASE  db_service_client;
-
 CREATE TABLE client(
     id INT PRIMARY KEY,
     nom VARCHAR(100),

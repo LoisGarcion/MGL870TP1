@@ -1,5 +1,3 @@
-CREATE DATABASE  db_service_banque;
-
 CREATE TABLE banque(
     idClient INT PRIMARY KEY,
     compteCourant INT,

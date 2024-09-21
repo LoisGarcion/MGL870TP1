@@ -8,7 +8,7 @@ const pool = new Pool(
         host:'dbbanque',
         password:'dbbanquepassword',
         database:'dbb',
-        port:5433,
+        port:5432,
     });
 
 const app = express();
@@ -18,14 +18,14 @@ app.use(express.json());
 app.listen(
 8081,
     () => {
-        console.log('Server running on port 8080');
+        console.log('Server running on port 8081');
     }
 )
 
 app.get("/banque/:id", (req, res) => {
     //recuperer les info banquaire du client
-    pool.query("SELECT * FROM banque WHERE id = $1", [req.params.id], (error, results) => {
-        res.status(200).json(results);
+    pool.query("SELECT * FROM banque WHERE idClient = $1", [req.params.id], (error, results) => {
+        res.status(200).json(results.rows);
     });
 });
 
