@@ -9,8 +9,28 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api-logs": "^0.53.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.50.0",
+    "@opentelemetry/exporter-collector": "^0.25.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.53.0",
+    "@opentelemetry/exporter-otlp-http": "^0.26.0",
+    "@opentelemetry/instrumentation": "^0.53.0",
+    "@opentelemetry/instrumentation-express": "^0.42.0",
+    "@opentelemetry/instrumentation-http": "^0.53.0",
+    "@opentelemetry/node": "^0.24.0",
+    "@opentelemetry/resources": "^1.26.0",
+    "@opentelemetry/sdk-logs": "^0.53.0",
+    "@opentelemetry/sdk-metrics": "^1.26.0",
+    "@opentelemetry/sdk-node": "^0.53.0",
+    "@opentelemetry/sdk-trace-node": "^1.26.0",
+    "@opentelemetry/sdk-trace-web": "^1.26.0",
+    "@opentelemetry/semantic-conventions": "^1.27.0",
     "cors": "^2.8.5",
     "express": "^4.21.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "request": "^2.88.2",
+    "winston": "^3.14.2",
+    "winston-logstash": "^1.2.1"
   }
 }
