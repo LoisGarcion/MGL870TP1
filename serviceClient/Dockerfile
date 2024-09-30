@@ -8,4 +8,4 @@ RUN npm install
 
 EXPOSE 8080
 
-CMD node --require ./instrumentation.js index.js
+CMD node --require ./monitoring.js index.js

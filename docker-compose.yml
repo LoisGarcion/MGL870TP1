@@ -72,3 +72,23 @@ services:
     depends_on:
       - servicebanque
       - serviceclient
+
+  loki:
+    container_name: loki
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: always
+    ports:
+      - "3100"
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    volumes:
+      - ./grafana/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki

@@ -1,8 +1,22 @@
 const { MeterProvider } = require('@opentelemetry/sdk-metrics');
 const { CollectorMetricExporter } = require('@opentelemetry/exporter-collector');
 const { PeriodicExportingMetricReader } = require('@opentelemetry/sdk-metrics');
+const logsAPI = require('@opentelemetry/api-logs');
+const { OTLPLogExporter } = require('@opentelemetry/exporter-logs-otlp-http');
+const {LoggerProvider, SimpleLogRecordProcessor, ConsoleLogRecordExporter} = require("@opentelemetry/sdk-logs");
 
+//LOGS
+// To start a logger, you first need to initialize the Logger provider.
+const loggerProvider = new LoggerProvider();
+// Add a processor to export log record
+loggerProvider.addLogRecordProcessor(
+    new SimpleLogRecordProcessor(new ConsoleLogRecordExporter())
+);
 
+const logExporter = new OTLPLogExporter({url: 'http://localhost:4318/v1/logs'});
+loggerProvider.addLogRecordProcessor(new SimpleLogRecordProcessor(logExporter))
+
+//METRICS
 const collectorOptions = {
     url: 'http://localhost:4318/v1/metrics', // URL vers laquelle les métriques sont envoyées
     headers: {},
