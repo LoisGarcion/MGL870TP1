@@ -2,12 +2,11 @@ const Pool = require('pg').Pool;
 const cors = require('cors');
 const express = require('express');
 const request = require('request');
-
+const { loggerProvider } = require('./monitoring');
 const opentelemetry = require('@opentelemetry/api');
-
 const logsAPI = require('@opentelemetry/api-logs');
-const logger = logsAPI.logs.getLogger('default');
 
+const logger = loggerProvider.getLogger('serviceClient');
 // emit a log record
 logger.emit({
     severityNumber: logsAPI.SeverityNumber.INFO,

@@ -32,4 +32,3 @@ service:
       receivers: [ otlp ]
       processors: [ batch ]
       exporters: [ loki ]
-
