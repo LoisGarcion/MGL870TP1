@@ -5,15 +5,9 @@ const request = require('request');
 const { loggerProvider } = require('./monitoring');
 const opentelemetry = require('@opentelemetry/api');
 const logsAPI = require('@opentelemetry/api-logs');
+const {log} = require("winston");
 
 const logger = loggerProvider.getLogger('serviceClient');
-// emit a log record
-logger.emit({
-    severityNumber: logsAPI.SeverityNumber.INFO,
-    severityText: 'INFO',
-    body: 'this is a log record body',
-    attributes: { 'log.type': 'LogRecord' },
-});
 
 const tracer = opentelemetry.trace.getTracer(
     'Api service client',
@@ -36,11 +30,10 @@ app.use(express.json());
 app.listen(
     8080,
     () => {
-        console.log('Server running on port 8080');
         logger.emit({
             severityNumber: logsAPI.SeverityNumber.INFO,
             severityText: 'INFO',
-            body: 'Le serveur est lancé sur le port 8080',
+            body: 'Server running on port 8080',
             attributes: { 'log.type': 'LogRecord' },
         });
     }
@@ -49,31 +42,85 @@ app.listen(
 app.get("/client/:id", (req, res) => {
     //recuperer les info du client
     pool.query("SELECT * FROM client WHERE id = $1", [req.params.id], (error, results) => {
+        if(results.rows.length === 0) {
+            logger.emit({
+                severityNumber: logsAPI.SeverityNumber.WARN,
+                severityText: 'WARN',
+                body: 'ROUTE : client/' + req.params.id + ' SENT : 404, Client not found',
+                attributes: { 'log.type': 'LogRecord' },
+            });
+            res.status(404).json({error: "Client not found"});
+        }
         logger.emit({
             severityNumber: logsAPI.SeverityNumber.INFO,
             severityText: 'INFO',
-            body: 'La requête client/:id a renvoyé une 200',
+            body: 'ROUTE : client/' + req.params.id + ' SENT : 200 DATA : ' + JSON.stringify(results.rows[0]),
             attributes: { 'log.type': 'LogRecord' },
         });
-        console.log("test");
         res.status(200).json(results.rows);
     })
 });
 app.get("/client/:id/releve", (req, res) => {
-    //TODO verif que le client existe
     let infoClient;
     //fais une requete http vers localhost:8081/banque/:id pour récup les infos bancaires
-    console.log("requete vers http://servicebanque:8081/banque/"+req.params.id)
     request('http://servicebanque:8081/banque/'+req.params.id, { json: true }, (err, resp, body) => {
-        if (err) { return console.log(err); }
-        if(resp.statusCode !== 200){
-            res.status(404).json({error: "Client not found"});
+        if (err) {
+            logger.emit({
+                severityNumber: logsAPI.SeverityNumber.ERROR,
+                severityText: 'ERROR',
+                body: 'HTTP : servicebanque:8081/banque/' + req.params.id + ' ERROR : ' + err,
+                attributes: { 'log.type': 'LogRecord' },
+            })
+            return res.status(500).json({error: "Internal server error : " + err});
+        }
+        if(resp.statusCode === 404){
+            logger.emit({
+                severityNumber: logsAPI.SeverityNumber.WARN,
+                severityText: 'WARN',
+                body: 'HTTP : servicebanque:8081/banque/' + req.params.id + ' SENT : 404 Client not found',
+                attributes: { 'log.type': 'LogRecord' },
+            });
+            return res.status(404).json({error: "Client not found"});
+        }
+        if(resp.statusCode === 200){
+            logger.emit({
+                severityNumber: logsAPI.SeverityNumber.INFO,
+                severityText: 'INFO',
+                body: 'HTTP : servicebanque:8081/banque/' + req.params.id + ' SENT : 200 DATA : ' + JSON.stringify(body[0]),
+                attributes: { 'log.type': 'LogRecord' },
+            });
         }
 
         //recupere les infos du client
         pool.query("SELECT * FROM client WHERE id = $1", [req.params.id], (error, results) => {
-            infoClient = "relevé du client : nom: " + results.rows[0].nom + " prenom: " + results.rows[0].prenom + " compteCourant: " + body[0].comptecourant + " compteCredit: " + body[0].comptecredit;
-            res.status(200).json(infoClient);
+            if(error) {
+                logger.emit({
+                    severityNumber: logsAPI.SeverityNumber.ERROR,
+                    severityText: 'ERROR',
+                    body: 'ROUTE : client/' + req.params.id + '/releve ERROR : ' + error,
+                    attributes: { 'log.type': 'LogRecord' },
+                });
+                res.status(500).json({error: "Internal server error : " + error});
+            }
+            if(results.rows.length === 0) {
+                logger.emit({
+                    severityNumber: logsAPI.SeverityNumber.WARN,
+                    severityText: 'WARN',
+                    body: 'ROUTE : client/' + req.params.id + ' SENT : 404 Client not found',
+                    attributes: { 'log.type': 'LogRecord' },
+                });
+                res.status(404).json({error: "Client not found"});
+            }
+            else {
+                infoClient = "relevé du client : nom: " + results.rows[0].nom + " prenom: " + results.rows[0].prenom + " compteCourant: " + body[0].comptecourant + " compteCredit: " + body[0].comptecredit;
+                logger.emit({
+                    severityNumber: logsAPI.SeverityNumber.INFO,
+                    severityText: 'INFO',
+                    body: 'ROUTE : client/' + req.params.id + '/releve SENT : 200 DATA : ' + JSON.stringify(infoClient),
+                    attributes: { 'log.type': 'LogRecord' },
+                });
+                res.status(200).json(infoClient);
+            }
         });
     });
 });
