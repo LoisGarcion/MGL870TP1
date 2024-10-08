@@ -5,7 +5,6 @@ const request = require('request');
 const { loggerProvider } = require('./monitoring');
 const opentelemetry = require('@opentelemetry/api');
 const logsAPI = require('@opentelemetry/api-logs');
-const {log} = require("winston");
 
 const logger = loggerProvider.getLogger('serviceClient');
 
@@ -42,6 +41,15 @@ app.listen(
 app.get("/client/:id", (req, res) => {
     //recuperer les info du client
     pool.query("SELECT * FROM client WHERE id = $1", [req.params.id], (error, results) => {
+        if(error) {
+            logger.emit({
+                severityNumber: logsAPI.SeverityNumber.ERROR,
+                severityText: 'ERROR',
+                body: 'ROUTE : client/' + req.params.id + ' ERROR : ' + error,
+                attributes: { 'log.type': 'LogRecord' },
+            });
+            return res.status(500).json({error: "Internal server error : " + error});
+        }
         if(results.rows.length === 0) {
             logger.emit({
                 severityNumber: logsAPI.SeverityNumber.WARN,
@@ -49,7 +57,7 @@ app.get("/client/:id", (req, res) => {
                 body: 'ROUTE : client/' + req.params.id + ' SENT : 404, Client not found',
                 attributes: { 'log.type': 'LogRecord' },
             });
-            res.status(404).json({error: "Client not found"});
+            return res.status(404).json({error: "Client not found"});
         }
         logger.emit({
             severityNumber: logsAPI.SeverityNumber.INFO,
@@ -57,7 +65,7 @@ app.get("/client/:id", (req, res) => {
             body: 'ROUTE : client/' + req.params.id + ' SENT : 200 DATA : ' + JSON.stringify(results.rows[0]),
             attributes: { 'log.type': 'LogRecord' },
         });
-        res.status(200).json(results.rows);
+        return res.status(200).json(results.rows);
     })
 });
 app.get("/client/:id/releve", (req, res) => {
@@ -100,7 +108,7 @@ app.get("/client/:id/releve", (req, res) => {
                     body: 'ROUTE : client/' + req.params.id + '/releve ERROR : ' + error,
                     attributes: { 'log.type': 'LogRecord' },
                 });
-                res.status(500).json({error: "Internal server error : " + error});
+                return res.status(500).json({error: "Internal server error : " + error});
             }
             if(results.rows.length === 0) {
                 logger.emit({
@@ -109,7 +117,7 @@ app.get("/client/:id/releve", (req, res) => {
                     body: 'ROUTE : client/' + req.params.id + ' SENT : 404 Client not found',
                     attributes: { 'log.type': 'LogRecord' },
                 });
-                res.status(404).json({error: "Client not found"});
+                return res.status(404).json({error: "Client not found"});
             }
             else {
                 infoClient = "relevé du client : nom: " + results.rows[0].nom + " prenom: " + results.rows[0].prenom + " compteCourant: " + body[0].comptecourant + " compteCredit: " + body[0].comptecredit;
@@ -119,9 +127,23 @@ app.get("/client/:id/releve", (req, res) => {
                     body: 'ROUTE : client/' + req.params.id + '/releve SENT : 200 DATA : ' + JSON.stringify(infoClient),
                     attributes: { 'log.type': 'LogRecord' },
                 });
-                res.status(200).json(infoClient);
+                return res.status(200).json(infoClient);
             }
         });
     });
 });
-
+app.get("/error", (req, res) => {
+    //provoquer une erreur dans un try catch
+    try{
+        throw new Error('Ceci est une erreur');
+    }
+    catch (Exception){
+        logger.emit({
+            severityNumber: logsAPI.SeverityNumber.ERROR,
+            severityText: 'ERROR',
+            body: 'ROUTE : client/error ERROR : ' + Exception,
+            attributes: { 'log.type': 'LogRecord' },
+        });
+        return res.status(500).json({error: "Internal server error : " + Exception});
+    }
+});
