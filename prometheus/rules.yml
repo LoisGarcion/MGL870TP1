@@ -1,0 +1,33 @@
+groups:
+  - name: microservice_alerts
+    rules:
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_response_time[5m])) > 2000
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Temps de réponse élevé sur le microservice"
+          description: "Le temps de réponse p95 est supérieur à 2 secondes (2000 ms) pour le microservice."
+
+      - alert: HighMemoryUsage
+        expr: memory_usage > 500 # Utilisation de la mémoire en Mo
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Utilisation élevée de la mémoire sur le microservice"
+          description: "La mémoire utilisée par le microservice dépasse les 500 Mo."
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+
+      - alert: TestAlertUpDown
+        expr: test_up_down_counter <= -10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "UpDownCounter is too low"
+          description: "The UpDownCounter has reached a critical value of -10."
