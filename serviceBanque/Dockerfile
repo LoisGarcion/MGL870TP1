@@ -8,4 +8,4 @@ RUN npm install
 
 EXPOSE 8081
 
-CMD node --require ./monitoring.js index.js
+CMD node --require ./logs.js index.js

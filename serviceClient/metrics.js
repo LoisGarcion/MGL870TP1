@@ -13,13 +13,13 @@ const {
 } = require('@opentelemetry/sdk-metrics');
 const { Resource } = require('@opentelemetry/resources');
 const {
-    SEMRESATTRS_SERVICE_NAME,
+    SEMRESATTRS_SERVICE_NAME, ATTR_SERVICE_NAME,
 } = require('@opentelemetry/semantic-conventions');
 
 // Optional and only needed to see the internal diagnostic logging (during development)
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
-const metricExporter = new OTLPMetricExporter({
+const metricExporter = new OTLPMetricExporter({url: 'http://otel-collector:4318/v1/metrics'
     // headers: {
     //   foo: 'bar'
     // },
@@ -36,18 +36,11 @@ const expHistogramView = new View({
 // Create an instance of the metric provider
 const meterProvider = new MeterProvider({
     resource: new Resource({
-        [SEMRESATTRS_SERVICE_NAME]: 'basic-metric-service',
+        [ATTR_SERVICE_NAME]: 'basic-metric-service',
     }),
     views: [expHistogramView],
+    readers: [new PeriodicExportingMetricReader({ exporter: metricExporter, exportIntervalMillis: 1000 })],
 });
-
-meterProvider.addMetricReader(
-    new PeriodicExportingMetricReader({
-        exporter: metricExporter,
-        // exporter: new ConsoleMetricExporter(),
-        exportIntervalMillis: 1000,
-    })
-);
 
 const meter = meterProvider.getMeter('example-exporter-collector');
 
@@ -63,9 +56,9 @@ const histogram = meter.createHistogram('test_histogram', {
     description: 'Example of a Histogram',
 });
 
-const exponentialHistogram = meter.createHistogram('test_exponential_histogram', {
+/*const exponentialHistogram = meter.createHistogram('test_exponential_histogram', {
     description: 'Example of an ExponentialHistogram',
-});
+});*/
 
 const attributes = { pid: process.pid, environment: 'staging' };
 
@@ -73,5 +66,5 @@ setInterval(() => {
     requestCounter.add(1, attributes);
     upDownCounter.add(Math.random() > 0.5 ? 1 : -1, attributes);
     histogram.record(Math.random(), attributes);
-    exponentialHistogram.record(Math.random(), attributes);
+    //exponentialHistogram.record(Math.random(), attributes);
 }, 1000);
