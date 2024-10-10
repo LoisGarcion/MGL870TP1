@@ -7,6 +7,9 @@ const logsAPI = require('@opentelemetry/api-logs');
 
 const logger = loggerProvider.getLogger('serviceBanque');
 
+const tracer = require("./traces")("Banque-Service");
+
+
 const pool = new Pool(
     {
         user:'dbbanqueuser',

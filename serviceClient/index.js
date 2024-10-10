@@ -9,10 +9,8 @@ const logsAPI = require('@opentelemetry/api-logs');
 
 const logger = loggerProvider.getLogger('serviceClient');
 
-const tracer = opentelemetry.trace.getTracer(
-    'Api service client',
-    '0.1.0',
-);
+const tracer = require("./traces")("Client-Service");
+
 
 const pool = new Pool(
     {
