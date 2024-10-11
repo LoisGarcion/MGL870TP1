@@ -32,6 +32,14 @@ services:
     depends_on:
       - dbclient
 
+  k6-client:
+    image: grafana/k6
+    volumes:
+      - ./serviceclient/test-client.js:/test/test-client.js
+    command: run /test/test-client.js
+    depends_on:
+      - serviceclient
+
   servicebanque:
     build: ./serviceBanque
     environment:
@@ -107,7 +115,6 @@ services:
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($|/)"'
 
-
   loki:
     container_name: loki
     image: grafana/loki:latest
@@ -127,6 +134,7 @@ services:
     depends_on:
       - prometheus
       - loki
+
   jaeger:
     image: ${REGISTRY:-}jaegertracing/all-in-one:${JAEGER_VERSION:-latest}
     ports:
