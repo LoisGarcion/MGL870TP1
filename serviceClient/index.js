@@ -64,7 +64,8 @@ app.get("/client/:id", (req, res) => {
             body: 'ROUTE : client/' + req.params.id + ' SENT : 200 DATA : ' + JSON.stringify(results.rows[0]),
             attributes: { 'log.type': 'LogRecord' },
         });
-        return res.status(200).json(results.rows);
+        return res.status(200).json({message: "Debit successful"});
+        //json(results.rows);
     })
 });
 app.get("/client/:id/releve", (req, res) => {

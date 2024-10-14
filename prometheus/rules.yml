@@ -22,6 +22,11 @@ groups:
       - alert: InstanceDown
         expr: up == 0
         for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance down"
+          description: "L'instance {{ $labels.instance }} est hors service depuis plus d'1 minute."
 
       - alert: TestAlertUpDown
         expr: test_up_down_counter <= -10

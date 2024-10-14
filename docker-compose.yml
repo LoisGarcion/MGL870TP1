@@ -87,7 +87,7 @@ services:
   alertmanager:
     image: prom/alertmanager
     volumes:
-      - ./prometheus/alertmanager.yml:/etc/prometheus/alertmanager.yml
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     ports:
       - "9093:9093"
     depends_on:
