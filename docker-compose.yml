@@ -10,6 +10,16 @@ services:
       - ./serviceClient/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+
+  dbclient_exporter:
+    image: wrouesnel/postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "dbclientuser:dbclientpassword@dbclient:5432/dbc?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - dbclient
+
   dbbanque:
     image: postgres
     environment:
@@ -20,6 +30,15 @@ services:
       - ./serviceBanque/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5433:5432"
+
+  dbbanque_exporter:
+    image: wrouesnel/postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "dbbanqueuser:dbbanquepassword@dbbanque:5432/dbb?sslmode=disable"
+    ports:
+      - "9188:9187"  # Change le port pour éviter un conflit
+    depends_on:
+      - dbbanque
 
   serviceclient:
     build: ./serviceClient
