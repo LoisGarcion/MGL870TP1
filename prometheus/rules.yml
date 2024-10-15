@@ -22,6 +22,11 @@ groups:
       - alert: InstanceDown
         expr: up == 0
         for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance down"
+          description: "L'instance {{ $labels.instance }} est hors service depuis plus d'1 minute."
 
       - alert: TestAlertUpDown
         expr: test_up_down_counter <= -10
@@ -31,3 +36,57 @@ groups:
         annotations:
           summary: "UpDownCounter is too low"
           description: "The UpDownCounter has reached a critical value of -10."
+
+      - alert: HighCPUUsage
+        expr: (sum(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (instance)) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Utilisation élevée du CPU sur {{ $labels.instance }}"
+          description: "L'utilisation du CPU dépasse 80% depuis plus de 2 minutes."
+
+      - alert: LowMemory
+        expr: node_memory_MemAvailable_bytes < 500 * 1024 * 1024
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mémoire faible sur {{ $labels.instance }}"
+          description: "La mémoire disponible est inférieure à 500 Mo."
+
+      - alert: HighErrorRate
+        expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) by (instance) / sum(rate(http_requests_total[5m])) by (instance)) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Taux d'erreurs élevé sur {{ $labels.instance }}"
+          description: "Le taux d'erreurs dépasse 5%."
+
+      - alert: HighLatency
+        expr: avg(http_request_duration_seconds) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latence élevée sur {{ $labels.instance }}"
+          description: "Le temps de réponse moyen dépasse 2 secondes."
+
+      - alert: ContainerRestarted
+        expr: changes(container_last_seen[1h]) > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Le conteneur {{ $labels.container }} redémarre fréquemment"
+          description: "Le conteneur a redémarré plus de 5 fois au cours de la dernière heure."
+
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Utilisation du disque élevée sur {{ $labels.instance }}"
+          description: "L'utilisation du disque dépasse 90% sur le système de fichiers {{ $labels.mountpoint }}."
