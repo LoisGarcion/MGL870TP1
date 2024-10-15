@@ -11,6 +11,7 @@ const logger = loggerProvider.getLogger('serviceClient');
 
 const tracer = require("./traces")("Client-Service");
 
+const {meter, counter200Request, counter404Request, counter500Request, requestDuration, attributes} = require("./metrics");
 
 const pool = new Pool(
     {
@@ -38,6 +39,8 @@ app.listen(
 )
 
 app.get("/client/:id", (req, res) => {
+    //start time
+    let start = Date.now();
     //recuperer les info du client
     pool.query("SELECT * FROM client WHERE id = $1", [req.params.id], (error, results) => {
         if(error) {
@@ -47,6 +50,7 @@ app.get("/client/:id", (req, res) => {
                 body: 'ROUTE : client/' + req.params.id + ' ERROR : ' + error,
                 attributes: { 'log.type': 'LogRecord' },
             });
+            counter500Request.add(1, attributes);
             return res.status(500).json({error: "Internal server error : " + error});
         }
         if(results.rows.length === 0) {
@@ -56,6 +60,7 @@ app.get("/client/:id", (req, res) => {
                 body: 'ROUTE : client/' + req.params.id + ' SENT : 404, Client not found',
                 attributes: { 'log.type': 'LogRecord' },
             });
+            counter404Request.add(1, attributes);
             return res.status(404).json({error: "Client not found"});
         }
         logger.emit({
@@ -64,11 +69,15 @@ app.get("/client/:id", (req, res) => {
             body: 'ROUTE : client/' + req.params.id + ' SENT : 200 DATA : ' + JSON.stringify(results.rows[0]),
             attributes: { 'log.type': 'LogRecord' },
         });
+        counter200Request.add(1, attributes);
+        let elapsedTime = Date.now() - start;
+        requestDuration.record(elapsedTime, attributes);  // Record the elapsed time
         return res.status(200).json(results.rows);
     })
 });
 app.get("/client/:id/releve", (req, res) => {
     let infoClient;
+    let start = Date.now();
     //fais une requete http vers localhost:8081/banque/:id pour récup les infos bancaires
     request('http://servicebanque:8081/banque/'+req.params.id, { json: true }, (err, resp, body) => {
         if (err) {
@@ -78,6 +87,7 @@ app.get("/client/:id/releve", (req, res) => {
                 body: 'HTTP : servicebanque:8081/banque/' + req.params.id + ' ERROR : ' + err,
                 attributes: { 'log.type': 'LogRecord' },
             })
+            counter500Request.add(1, attributes);
             return res.status(500).json({error: "Internal server error : " + err});
         }
         if(resp.statusCode === 404){
@@ -87,6 +97,7 @@ app.get("/client/:id/releve", (req, res) => {
                 body: 'HTTP : servicebanque:8081/banque/' + req.params.id + ' SENT : 404 Client not found',
                 attributes: { 'log.type': 'LogRecord' },
             });
+            counter404Request.add(1, attributes);
             return res.status(404).json({error: "Client not found"});
         }
         if(resp.statusCode === 200){
@@ -107,6 +118,7 @@ app.get("/client/:id/releve", (req, res) => {
                     body: 'ROUTE : client/' + req.params.id + '/releve ERROR : ' + error,
                     attributes: { 'log.type': 'LogRecord' },
                 });
+                counter500Request.add(1, attributes);
                 return res.status(500).json({error: "Internal server error : " + error});
             }
             if(results.rows.length === 0) {
@@ -116,6 +128,7 @@ app.get("/client/:id/releve", (req, res) => {
                     body: 'ROUTE : client/' + req.params.id + ' SENT : 404 Client not found',
                     attributes: { 'log.type': 'LogRecord' },
                 });
+                counter404Request.add(1, attributes);
                 return res.status(404).json({error: "Client not found"});
             }
             else {
@@ -126,6 +139,9 @@ app.get("/client/:id/releve", (req, res) => {
                     body: 'ROUTE : client/' + req.params.id + '/releve SENT : 200 DATA : ' + JSON.stringify(infoClient),
                     attributes: { 'log.type': 'LogRecord' },
                 });
+                counter200Request.add(1, attributes);
+                let elapsedTime = Date.now() - start;
+                requestDuration.record(elapsedTime, attributes);  // Record the elapsed time
                 return res.status(200).json(infoClient);
             }
         });
@@ -143,6 +159,7 @@ app.get("/error", (req, res) => {
             body: 'ROUTE : client/error ERROR : ' + Exception,
             attributes: { 'log.type': 'LogRecord' },
         });
+        counter500Request.add(1, attributes);
         return res.status(500).json({error: "Internal server error : " + Exception});
     }
 });

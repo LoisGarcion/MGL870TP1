@@ -1,3 +1,5 @@
+require('./traces');
+require('./metrics');
 const logsAPI = require('@opentelemetry/api-logs');
 const { OTLPLogExporter } = require('@opentelemetry/exporter-logs-otlp-http');
 const {LoggerProvider, SimpleLogRecordProcessor} = require("@opentelemetry/sdk-logs");
