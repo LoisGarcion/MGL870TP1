@@ -11,7 +11,7 @@ const logger = loggerProvider.getLogger('serviceClient');
 
 const tracer = require("./traces")("Client-Service");
 
-const {meter, counter200Request, counter404Request, counter500Request, requestDuration, attributes} = require("./metrics");
+const {meter, counter200Request, counter404Request, counter500Request, requestDuration, attributes, responseSizeHistogram, activeConnections} = require("./metrics");
 
 const pool = new Pool(
     {
@@ -22,9 +22,27 @@ const pool = new Pool(
         port:5432,
     });
 
+pool.on('connect', () => {
+    activeConnections.add(1, attributes);
+});
+
+pool.on('remove', () => {
+    activeConnections.add(-1, attributes);
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+app.use((req, res, next) => {
+    const originalSend = res.send;
+    res.send = function(body) {
+        const responseSize = Buffer.byteLength(body);
+        responseSizeHistogram.record(responseSize, attributes);
+        return originalSend.apply(this, arguments);
+    };
+    next();
+});
 
 app.listen(
     8080,

@@ -36,49 +36,61 @@ const expHistogramView = new View({
 // Create an instance of the metric provider
 const meterProvider = new MeterProvider({
     resource: new Resource({
-        [ATTR_SERVICE_NAME]: 'service_client_metric_service',
+        [ATTR_SERVICE_NAME]: 'service_banque_metric_service',
     }),
     views: [expHistogramView],
     readers: [new PeriodicExportingMetricReader({ exporter: metricExporter, exportIntervalMillis: 1000 })],
 });
 
-const meter = meterProvider.getMeter('service_client');
+const meter = meterProvider.getMeter('service_banque');
 
-const counter200Request = meter.createCounter('client.http_request_valid', {
+const counter200Request = meter.createCounter('banque.http_request_valid', {
     description: 'Counter for HTTP 200 responses',
 });
 
-const counter500Request = meter.createCounter('client.http_request_error', {
+const counter400Request = meter.createCounter('banque.http_request_bad',
+    {
+        description: 'Counter for HTTP 400 responses',
+    });
+
+const counter500Request = meter.createCounter('banque.http_request_error', {
     description: 'Counter for HTTP 500 responses',
 });
 
-const counter404Request = meter.createCounter('client.http_request_notfound', {
+const counter404Request = meter.createCounter('banque.http_request_notfound', {
     description: 'Counter for HTTP 404 responses',
 });
 
-const requestDuration = meter.createHistogram('client.request_duration', {
+const requestDuration = meter.createHistogram('banque.request_duration', {
     description: 'Histogram for the duration of requests',
     unit: 'milliseconds',
     boundaries: [10, 50, 100, 250, 500, 1000, 2500, 5000]  // Custom bucket boundaries in milliseconds
 });
 
-const activeConnections = meter.createUpDownCounter('client.db_active_connections', {
+const activeConnections = meter.createUpDownCounter('banque.db_active_connections', {
     description: 'Tracks the number of active database connections'
 });
 
-const responseSizeHistogram = meter.createHistogram('client.http_response_size_bytes', {
+const responseSizeHistogram = meter.createHistogram('banque.http_response_size_bytes', {
     description: 'Records the size of outgoing responses in bytes'
 });
 
-const attributes = { pid: process.pid, environment: 'serviceClient' };
+const debitAmountHistogram = meter.createHistogram('debit_amount', {
+    description: 'Tracks debit transaction amounts',
+    boundaries: [10, 50, 100, 200, 500, 1000, 10000, 100000] // Boundaries can be adjusted as needed
+});
+
+const attributes = { pid: process.pid, environment: 'staging' };
 
 module.exports = {
     meter,
     counter200Request,
+    counter400Request,
     counter500Request,
     counter404Request,
     requestDuration,
     attributes,
     activeConnections,
     responseSizeHistogram,
+    debitAmountHistogram
 };

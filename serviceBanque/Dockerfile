@@ -8,4 +8,4 @@ RUN npm install
 
 EXPOSE 8081
 
-CMD node --require ./logs.js index.js
+CMD node --require ./traces.js --require ./logs.js --require ./metrics.js index.js
