@@ -70,6 +70,14 @@ services:
     depends_on:
       - dbbanque
 
+  k6-banque:
+    image: grafana/k6
+    volumes:
+      - ./servicebanque/test-banque.js:/test/test-banque.js
+    command: run /test/test-banque.js
+    depends_on:
+      - servicebanque
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.82.0
     restart: always

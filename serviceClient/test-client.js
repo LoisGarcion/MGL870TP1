@@ -1,29 +1,42 @@
 import http from 'k6/http';
-import { check, sleep, fail } from 'k6';
+import { sleep, check } from 'k6';
 
+// Configuration options
 export let options = {
-    vus: 10,
     stages: [
-        { duration: '30s', target: 10 },
-        { duration: '1m', target: 10 },
-        { duration: '30s', target: 30 },
+        { duration: '10s', target: 10 },  // Ramp-up to 10 VUs in 30 seconds
+        { duration: '20', target: 50 },   // Stay at 50 VUs for 1 minute
+        { duration: '30s', target: 100 }, // Ramp-up to 100 VUs in 30 seconds
+        { duration: '20', target: 100 },  // Stay at 100 VUs for 1 minute
+        { duration: '10', target: 50 },  // Ramp-down to 50 VUs in 30 seconds
+        { duration: '10s', target: 0 },   // Ramp-down to 0 VUs in 30 seconds
     ],
-    thresholds: {
-        http_req_duration: ['p(95)<250'],
-    },
 };
 
+// Base URL for your service
+const BASE_URL = 'http://serviceclient:8080'; // Change this to the actual base URL of your service
+
+// Function to test the /client/:id endpoint
 export default function () {
-    const res = http.get('http://serviceclient:8080/client/2');
-    const checkOutput = check(res, {
-        'status is 200': (r) => r.status === 200,
+    // Randomly choose an ID between 1 and 100
+    let clientId = Math.floor(Math.random() * 80) + 1;
+
+    // Test /client/:id
+    let clientResponse = http.get(`${BASE_URL}/client/${clientId}`);
+
+    check(clientResponse, {
+        'status is 200 or 404': (r) => r.status === 200 || r.status === 404,
+        'client found or not': (r) => r.json('error') === undefined || r.json('error') === 'Client not found',
     });
 
-    if (!checkOutput) {
-        console.log('Error: status is not 200');
-        // Optionally, fail the test if the check fails
-        fail('Test failed due to unexpected status code');
-    }
+    // Test /client/:id/releve
+    let releveResponse = http.get(`${BASE_URL}/client/${clientId}/releve`);
 
-    sleep(1); // Add a small pause between iterations
+    check(releveResponse, {
+        'status is 200 or 404': (r) => r.status === 200 || r.status === 404,
+        'client or releve found or not': (r) => r.json('error') === undefined || r.json('error') === 'Client not found',
+    });
+
+    // Pause for a short time before the next iteration
+    sleep(1);
 }

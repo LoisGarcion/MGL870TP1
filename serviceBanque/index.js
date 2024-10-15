@@ -162,6 +162,65 @@ app.post("/banque/debit", (req, res) => {
     });
 });
 
+app.post("/banque/depot", (req, res) => {
+    let start = Date.now();
+    //check compte courant actuel
+    pool.query("SELECT compteCourant FROM banque WHERE idClient = $1", [req.body.idClient], (error, results) => {
+        if (error) {
+            logger.emit({
+                severityNumber: logsAPI.SeverityNumber.ERROR,
+                severityText: 'ERROR',
+                body: 'ROUTE : banque/depot ERROR : ' + error,
+                attributes: { 'log.type': 'LogRecord' },
+            });
+            counter500Request.add(1, attributes);
+            return res.status(500).json({error: "Erreur: " + error});
+        }
+        if (results.rowCount === 0) {
+            logger.emit({
+                severityNumber: logsAPI.SeverityNumber.WARN,
+                severityText: 'WARN',
+                body: 'ROUTE : banque/depot SENT : 404 Bank account not found',
+                attributes: { 'log.type': 'LogRecord' },
+            });
+            counter400Request.add(1, attributes);
+            return res.status(404).json({message: "Bank account not found"});
+        }
+        pool.query("UPDATE banque SET compteCourant = compteCourant + $1 WHERE idClient = $2", [req.body.valeurDepot, req.body.idClient], (error, results) => {
+            if (error) {
+                logger.emit({
+                    severityNumber: logsAPI.SeverityNumber.ERROR,
+                    severityText: 'ERROR',
+                    body: 'ROUTE : banque/depot ERROR : ' + error,
+                    attributes: { 'log.type': 'LogRecord' },
+                });
+                counter500Request.add(1, attributes);
+                return res.status(500).json({error: "Error: " + error});
+            }
+            if (results.rowCount === 0) {
+                logger.emit({
+                    severityNumber: logsAPI.SeverityNumber.WARN,
+                    severityText: 'WARN',
+                    body: 'ROUTE : banque/depot SENT : 404 Bank account not found',
+                    attributes: { 'log.type': 'LogRecord' },
+                });
+                counter404Request.add(1, attributes);
+                return res.status(404).json({message: "Bank account not found"});
+            }
+            logger.emit({
+                severityNumber: logsAPI.SeverityNumber.INFO,
+                severityText: 'INFO',
+                body: 'ROUTE : banque/depot SENT : 200 Depot successful',
+                attributes: { 'log.type': 'LogRecord' },
+            });
+            counter200Request.add(1, attributes);
+            let elapsedTime = Date.now() - start;
+            requestDuration.record(elapsedTime, attributes);  // Record the elapsed time
+            return res.status(200).json({message: "Depot successful"});
+        });
+    });
+});
+
 app.post("/banque/credit", (req, res) => {
     let start = Date.now();
     pool.query("UPDATE banque SET compteCredit = compteCredit + $1 WHERE idClient = $2", [req.body.valeurCredit, req.body.idClient], (error, results) => {
@@ -274,4 +333,21 @@ app.post("/banque/remboursement", (req, res) => {
             return res.status(200).json({message: "Refund successful"});
         });
     });
+});
+
+app.get("/error", (req, res) => {
+    //provoquer une erreur dans un try catch
+    try{
+        throw new Error('Ceci est une erreur');
+    }
+    catch (Exception){
+        logger.emit({
+            severityNumber: logsAPI.SeverityNumber.ERROR,
+            severityText: 'ERROR',
+            body: 'ROUTE : banque/error ERROR : ' + Exception,
+            attributes: { 'log.type': 'LogRecord' },
+        });
+        counter500Request.add(1, attributes);
+        return res.status(500).json({error: "Internal server error : " + Exception});
+    }
 });

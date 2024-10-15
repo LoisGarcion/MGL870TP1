@@ -44,17 +44,25 @@ const meterProvider = new MeterProvider({
 
 const meter = meterProvider.getMeter('service_client');
 
+const attributes = { pid: process.pid, environment: 'serviceClient' };
+
 const counter200Request = meter.createCounter('client.http_request_valid', {
     description: 'Counter for HTTP 200 responses',
 });
+
+counter200Request.add(0, attributes);
 
 const counter500Request = meter.createCounter('client.http_request_error', {
     description: 'Counter for HTTP 500 responses',
 });
 
+counter500Request.add(0, attributes);
+
 const counter404Request = meter.createCounter('client.http_request_notfound', {
     description: 'Counter for HTTP 404 responses',
 });
+
+counter404Request.add(0, attributes);
 
 const requestDuration = meter.createHistogram('client.request_duration', {
     description: 'Histogram for the duration of requests',
@@ -62,15 +70,19 @@ const requestDuration = meter.createHistogram('client.request_duration', {
     boundaries: [10, 50, 100, 250, 500, 1000, 2500, 5000]  // Custom bucket boundaries in milliseconds
 });
 
+requestDuration.record(0, attributes);
+
 const activeConnections = meter.createUpDownCounter('client.db_active_connections', {
     description: 'Tracks the number of active database connections'
 });
+
+activeConnections.add(0, attributes);
 
 const responseSizeHistogram = meter.createHistogram('client.http_response_size_bytes', {
     description: 'Records the size of outgoing responses in bytes'
 });
 
-const attributes = { pid: process.pid, environment: 'serviceClient' };
+responseSizeHistogram.record(0, attributes);
 
 module.exports = {
     meter,
