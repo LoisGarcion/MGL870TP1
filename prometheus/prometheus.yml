@@ -24,13 +24,5 @@ scrape_configs:
     static_configs:
       - targets: ['node-exporter:9100']
 
-  - job_name: 'dbclient'
-    static_configs:
-      - targets: [ 'dbclient_exporter:9187' ]
-
-  - job_name: 'dbbanque'
-    static_configs:
-      - targets: [ 'dbbanque_exporter:9188' ]
-
 rule_files:
   - './rules.yml'

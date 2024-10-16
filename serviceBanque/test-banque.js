@@ -109,7 +109,7 @@ export function testPostRemboursement() {
 }
 
 export function testGetError() {
-    if(Math.floor(Math.random() * 500) === 1){
+    if(Math.floor(Math.random() * 100) === 1){
         let errorResponse = http.get(`http://servicebanque:8081/error`);
         check(errorResponse, {
             'status is 500': (r) => r.status === 500,
