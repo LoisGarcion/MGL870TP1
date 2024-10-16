@@ -12,8 +12,8 @@ groups:
           description: "L'instance {{ $labels.instance }} est hors service depuis plus d'1 minute."
 
       - alert: HighContainerCPUUsage
-        expr: sum(rate(container_cpu_usage_seconds_total{instance=~"$host",name=~"$container",name=~".+"}[10s])) by (name) * 100 > 80
-        for: 1m
+        expr: sum(rate(container_cpu_usage_seconds_total{instance=~"$host",name=~"$container",name=~".+"}[5m])) by (name) * 100 > 80
+        for: 5m
         labels:
           severity: critical
         annotations:
@@ -30,7 +30,7 @@ groups:
           description: "The container {{ $labels.name }} has been using more than 500MB of memory for more than 5 minutes."
 
       - alert: HighDatabaseCPUUsage
-        expr: avg(rate(process_cpu_seconds_total{release="$release", instance="$instance"}[10s]) * 1000) > 80
+        expr: avg(rate(process_cpu_seconds_total{release="$release", instance="$instance"}[10s]) * 1000) > 10
         for: 1m
         labels:
           severity: critical
@@ -66,8 +66,8 @@ groups:
           description: "The 95th percentile of client request duration has exceeded 2 seconds for more than 5 minutes."
 
       - alert: ClientHttpRequestError
-        expr: rate(client_http_request_error[10s]) > 0
-        for: 1m
+        expr: rate(client_http_request_error[5m]) > 0
+        for: 5m
         labels:
           severity: critical
         annotations:
@@ -75,8 +75,8 @@ groups:
           description: "There have been HTTP request errors for the client in the last 5 minutes."
 
       - alert: BankRequestDurationHigh
-        expr: histogram_quantile(0.95, sum(rate(banque_request_duration_bucket[10s])) by (le)) > 2
-        for: 1m
+        expr: histogram_quantile(0.95, sum(rate(banque_request_duration_bucket[5m])) by (le)) > 2
+        for: 5m
         labels:
           severity: warning
         annotations:
@@ -84,8 +84,8 @@ groups:
           description: "The 95th percentile of bank request duration has exceeded 2 seconds for more than 5 minutes."
 
       - alert: BankHttpRequestError
-        expr: rate(banque_http_request_error[10s]) > 0
-        for: 1m
+        expr: rate(banque_http_request_error[5m]) > 0
+        for: 5m
         labels:
           severity: critical
         annotations:
@@ -93,8 +93,8 @@ groups:
           description: "There have been HTTP request errors for the bank in the last 5 minutes."
 
       - alert: BankDebitAmountHigh
-        expr: histogram_quantile(0.95, sum(rate(banque_debit_amount_bucket[10s])) by (le)) > 10000
-        for: 1m
+        expr: histogram_quantile(0.95, sum(rate(banque_debit_amount_bucket[5m])) by (le)) > 10000
+        for: 5m
         labels:
           severity: warning
         annotations:
@@ -102,8 +102,8 @@ groups:
           description: "The 95th percentile of bank debit amount has exceeded $10,000 for more than 5 minutes."
 
       - alert: InactiveBanqueService
-        expr: rate(banque_request_duration[1m]) == 0
-        for: 1m
+        expr: rate(banque_request_duration_bucket[5m]) == 0
+        for: 5m
         labels:
           severity: informational
         annotations:
