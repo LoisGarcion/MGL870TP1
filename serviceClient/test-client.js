@@ -37,6 +37,13 @@ export default function () {
         'client or releve found or not': (r) => r.json('error') === undefined || r.json('error') === 'Client not found',
     });
 
+    if(Math.floor(Math.random() * 250) === 1){
+        let errorResponse = http.get(`${BASE_URL}/error`);
+        check(errorResponse, {
+            'status is 500': (r) => r.status === 500,
+        });
+    }
+
     // Pause for a short time before the next iteration
     sleep(1);
 }

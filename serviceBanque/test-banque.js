@@ -20,7 +20,6 @@ export function testGetBanque() {
     check(res, {
         'GET /banque/:id status was 200': (r) => r.status === 200,
         'GET /banque/:id status was 404': (r) => r.status === 404,
-        'GET /banque/:id status was 500': (r) => r.status === 500,
     });
 }
 
@@ -43,7 +42,6 @@ export function testPostDebit() {
         'POST /banque/debit status was 200': (r) => r.status === 200,
         'POST /banque/debit status was 400': (r) => r.status === 400,
         'POST /banque/debit status was 404': (r) => r.status === 404,
-        'POST /banque/debit status was 500': (r) => r.status === 500,
     });
 }
 
@@ -65,7 +63,6 @@ export function testPostDepot() {
     check(res, {
         'POST /banque/depot status was 200': (r) => r.status === 200,
         'POST /banque/depot status was 404': (r) => r.status === 404,
-        'POST /banque/depot status was 500': (r) => r.status === 500,
     });
 }
 
@@ -87,7 +84,6 @@ export function testPostCredit() {
     check(res, {
         'POST /banque/credit status was 200': (r) => r.status === 200,
         'POST /banque/credit status was 404': (r) => r.status === 404,
-        'POST /banque/credit status was 500': (r) => r.status === 500,
     });
 }
 
@@ -109,15 +105,26 @@ export function testPostRemboursement() {
     check(res, {
         'POST /banque/remboursement status was 200': (r) => r.status === 200,
         'POST /banque/remboursement status was 400': (r) => r.status === 400,
-        'POST /banque/remboursement status was 500': (r) => r.status === 500,
     });
+}
+
+export function testGetError() {
+    if(Math.floor(Math.random() * 500) === 1){
+        let errorResponse = http.get(`http://servicebanque:8081/error`);
+        check(errorResponse, {
+            'status is 500': (r) => r.status === 500,
+        });
+    }
 }
 
 // Default function to run all tests
 export default function () {
     testGetBanque();
+    testPostDepot()
     testPostDebit();
     testPostCredit();
+    testPostDepot()
     testPostRemboursement();
+    testGetError();
     sleep(1); // Sleep for 1 second between requests
 }
