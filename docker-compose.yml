@@ -14,7 +14,7 @@ services:
   dbclient_exporter:
     image: wrouesnel/postgres_exporter
     environment:
-      DATA_SOURCE_NAME: "dbclientuser:dbclientpassword@dbclient:5432/dbc?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://dbclientuser:dbclientpassword@dbclient:5432/dbc?sslmode=disable"
     ports:
       - "9187:9187"
     depends_on:
@@ -34,7 +34,7 @@ services:
   dbbanque_exporter:
     image: wrouesnel/postgres_exporter
     environment:
-      DATA_SOURCE_NAME: "dbbanqueuser:dbbanquepassword@dbbanque:5433/dbb?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://dbbanqueuser:dbbanquepassword@dbbanque:5433/dbb?sslmode=disable"
     ports:
       - "9188:9187"  # Change le port pour éviter un conflit
     depends_on:
