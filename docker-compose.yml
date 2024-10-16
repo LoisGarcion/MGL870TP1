@@ -3,9 +3,9 @@ services:
   dbclient:
     image: postgres
     environment:
-      POSTGRES_DB: dbc
-      POSTGRES_USER: dbclientuser
-      POSTGRES_PASSWORD: dbclientpassword
+      POSTGRES_DB: "dbc"
+      POSTGRES_USER: "dbclientuser"
+      POSTGRES_PASSWORD: "dbclientpassword"
     volumes:
       - ./serviceClient/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
@@ -23,9 +23,9 @@ services:
   dbbanque:
     image: postgres
     environment:
-      POSTGRES_DB: dbb
-      POSTGRES_USER: dbbanqueuser
-      POSTGRES_PASSWORD: dbbanquepassword
+      POSTGRES_DB: "dbb"
+      POSTGRES_USER: "dbbanqueuser"
+      POSTGRES_PASSWORD: "dbbanquepassword"
     volumes:
       - ./serviceBanque/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
@@ -64,7 +64,7 @@ services:
     environment:
       OTEL_METRICS_EXPORTER: "prometheus"
       OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
-      OTEL_EXPORTER_PROMETHEUS_PORT: "9464"
+      OTEL_EXPORTER_PROMETHEUS_PORT: "9465"
     ports:
       - "8081:8081"
     depends_on:
