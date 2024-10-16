@@ -44,7 +44,7 @@ const meterProvider = new MeterProvider({
 
 const meter = meterProvider.getMeter('service_banque');
 
-const attributes = { pid: process.pid, environment: 'staging' };
+const attributes = { pid: process.pid, environment: 'serviceBanque' };
 
 const counter200Request = meter.createCounter('banque.http_request_valid', {
     description: 'Counter for HTTP 200 responses',

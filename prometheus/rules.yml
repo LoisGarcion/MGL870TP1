@@ -12,7 +12,7 @@ groups:
           description: "L'instance {{ $labels.instance }} est hors service depuis plus d'1 minute."
 
       - alert: HighContainerCPUUsage
-        expr: sum(rate(container_cpu_usage_seconds_total{instance=~"$host",name=~"$container",name=~".+"}[1m])) by (name) * 100 > 80
+        expr: sum(rate(container_cpu_usage_seconds_total{instance=~"$host",name=~"$container",name=~".+"}[10s])) by (name) * 100 > 80
         for: 1m
         labels:
           severity: critical
@@ -30,7 +30,7 @@ groups:
           description: "The container {{ $labels.name }} has been using more than 500MB of memory for more than 5 minutes."
 
       - alert: HighDatabaseCPUUsage
-        expr: avg(rate(process_cpu_seconds_total{release="$release", instance="$instance"}[1m]) * 1000) > 80
+        expr: avg(rate(process_cpu_seconds_total{release="$release", instance="$instance"}[10s]) * 1000) > 80
         for: 1m
         labels:
           severity: critical
@@ -39,7 +39,7 @@ groups:
           description: "The CPU usage for release {{ $labels.release }} on instance {{ $labels.instance }} has exceeded 80% for the past minute."
 
       - alert: HighDatabaseRAMUsage
-        expr: avg(rate(process_resident_memory_bytes{release="$release", instance="$instance"}[1m])) > 1e9  # 1 GB
+        expr: avg(rate(process_resident_memory_bytes{release="$release", instance="$instance"}[10s])) > 1e9  # 1 GB
         for: 1m
         labels:
           severity: critical
@@ -57,7 +57,7 @@ groups:
           description: "The process {{ $labels.release }} on instance {{ $labels.instance }} has more than 5000 open file descriptors for more than 2 minutes."
 
       - alert: ClientRequestDurationHigh
-        expr: histogram_quantile(0.95, sum(rate(client_request_duration_bucket[1m])) by (le)) > 2
+        expr: histogram_quantile(0.95, sum(rate(client_request_duration_bucket[10s])) by (le)) > 2
         for: 1m
         labels:
           severity: warning
@@ -66,7 +66,7 @@ groups:
           description: "The 95th percentile of client request duration has exceeded 2 seconds for more than 5 minutes."
 
       - alert: ClientHttpRequestError
-        expr: rate(client_http_request_error[1m]) > 0
+        expr: rate(client_http_request_error[10s]) > 0
         for: 1m
         labels:
           severity: critical
@@ -75,7 +75,7 @@ groups:
           description: "There have been HTTP request errors for the client in the last 5 minutes."
 
       - alert: BankRequestDurationHigh
-        expr: histogram_quantile(0.95, sum(rate(banque_request_duration_bucket[1m])) by (le)) > 2
+        expr: histogram_quantile(0.95, sum(rate(banque_request_duration_bucket[10s])) by (le)) > 2
         for: 1m
         labels:
           severity: warning
@@ -84,7 +84,7 @@ groups:
           description: "The 95th percentile of bank request duration has exceeded 2 seconds for more than 5 minutes."
 
       - alert: BankHttpRequestError
-        expr: rate(banque_http_request_error[1m]) > 0
+        expr: rate(banque_http_request_error[10s]) > 0
         for: 1m
         labels:
           severity: critical
@@ -93,7 +93,7 @@ groups:
           description: "There have been HTTP request errors for the bank in the last 5 minutes."
 
       - alert: BankDebitAmountHigh
-        expr: histogram_quantile(0.95, sum(rate(banque_debit_amount_bucket[1m])) by (le)) > 10000
+        expr: histogram_quantile(0.95, sum(rate(banque_debit_amount_bucket[10s])) by (le)) > 10000
         for: 1m
         labels:
           severity: warning
