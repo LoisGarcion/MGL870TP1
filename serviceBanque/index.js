@@ -114,7 +114,7 @@ app.post("/banque/debit", (req, res) => {
                 body: 'ROUTE : banque/debit SENT : 404 Bank account not found',
                 attributes: { 'log.type': 'LogRecord' },
             });
-            counter400Request.add(1, attributes);
+            counter404Request.add(1, attributes);
             return res.status(404).json({message: "Bank account not found"});
         }
         if (parseInt(results.rows[0].comptecourant) < parseInt(req.body.valeurDebit)) {
@@ -183,7 +183,7 @@ app.post("/banque/depot", (req, res) => {
                 body: 'ROUTE : banque/depot SENT : 404 Bank account not found',
                 attributes: { 'log.type': 'LogRecord' },
             });
-            counter400Request.add(1, attributes);
+            counter404Request.add(1, attributes);
             return res.status(404).json({message: "Bank account not found"});
         }
         pool.query("UPDATE banque SET compteCourant = compteCourant + $1 WHERE idClient = $2", [req.body.valeurDepot, req.body.idClient], (error, results) => {
